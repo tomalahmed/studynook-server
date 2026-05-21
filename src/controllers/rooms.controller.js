@@ -109,9 +109,11 @@ exports.updateRoom = asyncHandler(async (req, res) => {
 	room.name = fields.name;
 	room.description = fields.description;
 	room.image = fields.image;
+	room.libraryBranch = fields.libraryBranch;
 	room.floor = fields.floor;
 	room.capacity = fields.capacity;
 	room.hourlyRate = fields.hourlyRate;
+	room.roomType = fields.roomType;
 	room.amenities = fields.amenities;
 
 	await room.save();
