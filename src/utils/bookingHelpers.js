@@ -82,6 +82,7 @@ function formatBooking(booking) {
 					name: room.name,
 					image: normalizeRoomImage(room.image),
 					hourlyRate: room.hourlyRate,
+					libraryBranch: room.libraryBranch,
 				}
 			: null;
 

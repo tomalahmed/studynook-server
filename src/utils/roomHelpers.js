@@ -78,37 +78,20 @@ function buildFloorRegex(floorParam) {
 	};
 }
 
+/** Match filters by amenities — stored roomType may still be the schema default. */
 function buildRoomTypeCondition(roomType) {
-	const legacyMissingType = {
-		$or: [{ roomType: { $exists: false } }, { roomType: null }, { roomType: '' }],
-	};
-
 	if (roomType === 'quiet') {
-		return {
-			$or: [{ roomType: 'quiet' }, { ...legacyMissingType, amenities: 'Quiet Zone' }],
-		};
+		return { amenities: 'Quiet Zone' };
 	}
 
 	if (roomType === 'tech-heavy') {
 		return {
-			$or: [
-				{ roomType: 'tech-heavy' },
-				{
-					...legacyMissingType,
-					amenities: { $all: ['Projector'], $nin: ['Quiet Zone'] },
-				},
-			],
+			amenities: { $all: ['Projector'], $nin: ['Quiet Zone'] },
 		};
 	}
 
 	return {
-		$or: [
-			{ roomType: 'collaborative' },
-			{
-				...legacyMissingType,
-				amenities: { $nin: ['Quiet Zone', 'Projector'] },
-			},
-		],
+		amenities: { $nin: ['Quiet Zone', 'Projector'] },
 	};
 }
 
@@ -119,7 +102,7 @@ function formatRoom(room) {
 
 	const doc = room.toObject ? room.toObject() : room;
 	const amenities = doc.amenities || [];
-	const roomType = doc.roomType || inferRoomType(amenities);
+	const roomType = inferRoomType(amenities);
 
 	return {
 		id: doc._id.toString(),
@@ -161,10 +144,13 @@ function buildRoomsFilter(query) {
 
 	if (search && String(search).trim()) {
 		const term = String(search).trim();
+		const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 		and.push({
 			$or: [
-				{ name: { $regex: term, $options: 'i' } },
-				{ description: { $regex: term, $options: 'i' } },
+				{ name: { $regex: escaped, $options: 'i' } },
+				{ description: { $regex: escaped, $options: 'i' } },
+				{ libraryBranch: { $regex: escaped, $options: 'i' } },
+				{ floor: { $regex: escaped, $options: 'i' } },
 			],
 		});
 	}
@@ -269,6 +255,7 @@ function parseRoomBody(body) {
 	}
 
 	amenities = syncAmenitiesForRoomType(roomType, amenities);
+	roomType = inferRoomType(amenities);
 
 	if (!name) {
 		throw new Error('Room name is required');
