@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { normalizeRoomImage } = require('./images');
 
 const MIN_START_HOUR = 8;
 const MAX_START_HOUR = 20;
@@ -79,7 +80,7 @@ function formatBooking(booking) {
 			? {
 					id: room._id.toString(),
 					name: room.name,
-					image: room.image || '',
+					image: normalizeRoomImage(room.image),
 					hourlyRate: room.hourlyRate,
 				}
 			: null;

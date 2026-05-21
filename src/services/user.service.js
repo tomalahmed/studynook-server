@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const AppError = require('../utils/AppError');
+const { normalizeUserPhoto } = require('../utils/images');
 
 const USER_COLLECTION = 'user';
 
@@ -45,7 +46,7 @@ async function getBetterAuthUserById(userId) {
 		_id: ownerId,
 		name: user.name?.trim() || 'User',
 		email: (user.email || '').toLowerCase().trim(),
-		photo: user.image || user.photo || '',
+		photo: normalizeUserPhoto(user.image || user.photo),
 	};
 }
 

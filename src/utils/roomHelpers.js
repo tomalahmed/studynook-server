@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { normalizeRoomImage, validateRoomImage } = require('./images');
 
 const AMENITIES = [
 	'Whiteboard',
@@ -20,7 +21,7 @@ function formatRoom(room) {
 		id: doc._id.toString(),
 		name: doc.name,
 		description: doc.description,
-		image: doc.image,
+		image: normalizeRoomImage(doc.image),
 		floor: doc.floor,
 		capacity: doc.capacity,
 		hourlyRate: doc.hourlyRate,
@@ -84,7 +85,6 @@ function buildRoomsFilter(query) {
 function parseRoomBody(body) {
 	const name = body.name?.trim();
 	const description = body.description?.trim() ?? '';
-	const image = body.image?.trim() ?? '';
 	const floor = body.floor != null ? String(body.floor).trim() : '';
 	const capacity = Number(body.capacity);
 	const hourlyRate = Number(body.hourlyRate);
@@ -110,6 +110,13 @@ function parseRoomBody(body) {
 	}
 	if (!Number.isFinite(hourlyRate) || hourlyRate < 0) {
 		throw new Error('Hourly rate must be 0 or greater');
+	}
+
+	let image;
+	try {
+		image = validateRoomImage(body.image);
+	} catch (err) {
+		throw new Error(err.message);
 	}
 
 	return {

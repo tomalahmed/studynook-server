@@ -25,7 +25,7 @@ const roomSchema = new Schema(
     },
     image: {
       type: String,
-      default: '',
+      default: '/images/library.png',
       trim: true,
     },
     floor: {
