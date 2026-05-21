@@ -49,7 +49,43 @@ async function getBetterAuthUserById(userId) {
 	};
 }
 
+function buildUserFilter(userId) {
+	const id = String(userId);
+	const objectId = toObjectId(id);
+	const queries = [{ _id: id }, { id }];
+	if (objectId) {
+		queries.unshift({ _id: objectId });
+	}
+	return { $or: queries };
+}
+
+/**
+ * $push booking id onto Better Auth user document.
+ */
+async function pushBookingToUser(userId, bookingId) {
+	const db = mongoose.connection.db;
+	const result = await db
+		.collection(USER_COLLECTION)
+		.updateOne(buildUserFilter(userId), { $push: { bookings: bookingId } });
+
+	if (result.matchedCount === 0) {
+		throw new AppError('User not found', 404);
+	}
+}
+
+/**
+ * $pull booking id from Better Auth user document on cancel.
+ */
+async function pullBookingFromUser(userId, bookingId) {
+	const db = mongoose.connection.db;
+	await db
+		.collection(USER_COLLECTION)
+		.updateOne(buildUserFilter(userId), { $pull: { bookings: bookingId } });
+}
+
 module.exports = {
 	getBetterAuthUserById,
 	toObjectId,
+	pushBookingToUser,
+	pullBookingFromUser,
 };
