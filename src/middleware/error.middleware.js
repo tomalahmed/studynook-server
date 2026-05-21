@@ -3,6 +3,17 @@ function notFoundHandler(req, res) {
 }
 
 function errorHandler(err, req, res, next) {
+	if (err.name === 'ValidationError') {
+		const message = Object.values(err.errors)
+			.map((e) => e.message)
+			.join(', ');
+		return res.status(400).json({ error: message });
+	}
+
+	if (err.name === 'CastError') {
+		return res.status(400).json({ error: 'Invalid id' });
+	}
+
 	console.error(err);
 
 	const statusCode = err.statusCode || 500;
