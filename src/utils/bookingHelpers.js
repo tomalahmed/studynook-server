@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Booking = require('../models/Booking');
 const { normalizeRoomImage } = require('./images');
 
 const MIN_START_HOUR = 8;
@@ -121,10 +122,30 @@ function validateObjectId(id) {
 	return new mongoose.Types.ObjectId(id);
 }
 
+/**
+ * Overlap: existing.startHour < newEnd AND existing.endHour > newStart
+ */
+async function findConflictingBooking(roomId, date, startHour, endHour, session = null) {
+	const query = Booking.findOne({
+		roomId,
+		date,
+		status: 'confirmed',
+		startHour: { $lt: endHour },
+		endHour: { $gt: startHour },
+	});
+
+	if (session) {
+		query.session(session);
+	}
+
+	return query;
+}
+
 module.exports = {
 	parseBookingBody,
 	formatBooking,
 	canCancelBooking,
 	normalizeToUtcMidnight,
 	validateObjectId,
+	findConflictingBooking,
 };

@@ -95,14 +95,25 @@ function buildRoomTypeCondition(roomType) {
 	};
 }
 
-function formatRoom(room) {
+function formatRoom(room, options = {}) {
 	if (!room) {
 		return null;
 	}
 
+	const { includeOwnerEmail = false } = options;
 	const doc = room.toObject ? room.toObject() : room;
 	const amenities = doc.amenities || [];
 	const roomType = inferRoomType(amenities);
+
+	const owner = {
+		id: doc.owner._id.toString(),
+		name: doc.owner.name,
+		photo: doc.owner.photo || '',
+	};
+
+	if (includeOwnerEmail && doc.owner.email) {
+		owner.email = doc.owner.email;
+	}
 
 	return {
 		id: doc._id.toString(),
@@ -115,12 +126,7 @@ function formatRoom(room) {
 		hourlyRate: doc.hourlyRate,
 		roomType,
 		amenities,
-		owner: {
-			id: doc.owner._id.toString(),
-			name: doc.owner.name,
-			email: doc.owner.email,
-			photo: doc.owner.photo || '',
-		},
+		owner,
 		bookingCount: doc.bookingCount ?? 0,
 		createdAt: doc.createdAt,
 		updatedAt: doc.updatedAt,
@@ -139,7 +145,6 @@ function buildRoomsFilter(query) {
 		libraryBranch,
 		roomType,
 		minCapacity,
-		owner,
 	} = query;
 
 	if (search && String(search).trim()) {
@@ -205,13 +210,6 @@ function buildRoomsFilter(query) {
 		if (floorRegex) {
 			filter.floor = floorRegex;
 		}
-	}
-
-	if (owner === 'me' && query.ownerId) {
-		const ownerObjectId = mongoose.Types.ObjectId.isValid(query.ownerId)
-			? new mongoose.Types.ObjectId(query.ownerId)
-			: query.ownerId;
-		filter['owner._id'] = ownerObjectId;
 	}
 
 	if (and.length === 1) {

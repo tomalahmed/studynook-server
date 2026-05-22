@@ -84,9 +84,29 @@ async function pullBookingFromUser(userId, bookingId) {
 		.updateOne(buildUserFilter(userId), { $pull: { bookings: bookingId } });
 }
 
+/**
+ * Remove booking ids from Better Auth users who reference them (e.g. when a room is deleted).
+ */
+async function pullBookingsFromUsers(bookingIds) {
+	if (!bookingIds?.length) {
+		return;
+	}
+
+	const db = mongoose.connection.db;
+	const ids = bookingIds.map((id) =>
+		id instanceof mongoose.Types.ObjectId ? id : new mongoose.Types.ObjectId(id)
+	);
+
+	await db.collection(USER_COLLECTION).updateMany(
+		{ bookings: { $in: ids } },
+		{ $pull: { bookings: { $in: ids } } }
+	);
+}
+
 module.exports = {
 	getBetterAuthUserById,
 	toObjectId,
 	pushBookingToUser,
 	pullBookingFromUser,
+	pullBookingsFromUsers,
 };

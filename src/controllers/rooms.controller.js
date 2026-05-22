@@ -2,7 +2,11 @@ const Room = require('../models/Room');
 const Booking = require('../models/Booking');
 const AppError = require('../utils/AppError');
 const asyncHandler = require('../utils/asyncHandler');
-const { getBetterAuthUserById, toObjectId } = require('../services/user.service');
+const {
+	getBetterAuthUserById,
+	toObjectId,
+	pullBookingsFromUsers,
+} = require('../services/user.service');
 const {
 	formatRoom,
 	buildRoomsFilter,
@@ -16,7 +20,7 @@ exports.listRooms = asyncHandler(async (req, res) => {
 	const rooms = await Room.find(filter).sort({ createdAt: -1 });
 
 	res.json({
-		rooms: rooms.map(formatRoom),
+		rooms: rooms.map((room) => formatRoom(room)),
 		count: rooms.length,
 	});
 });
@@ -27,7 +31,7 @@ exports.getLatestRooms = asyncHandler(async (req, res) => {
 		.limit(6);
 
 	res.json({
-		rooms: rooms.map(formatRoom),
+		rooms: rooms.map((room) => formatRoom(room)),
 	});
 });
 
@@ -55,7 +59,7 @@ exports.getRoomById = asyncHandler(async (req, res) => {
 		throw new AppError('Room not found', 404);
 	}
 
-	res.json({ room: formatRoom(room) });
+	res.json({ room: formatRoom(room, { includeOwnerEmail: true }) });
 });
 
 exports.createRoom = asyncHandler(async (req, res) => {
@@ -139,14 +143,12 @@ exports.deleteRoom = asyncHandler(async (req, res) => {
 		throw new AppError('You can only delete your own rooms', 403);
 	}
 
+	const bookings = await Booking.find({ roomId: room._id }).select('_id');
+	const bookingIds = bookings.map((b) => b._id);
+
 	await Booking.deleteMany({ roomId: room._id });
 	await room.deleteOne();
-
-	const db = require('mongoose').connection.db;
-	await db.collection('user').updateMany(
-		{},
-		{ $pull: { bookings: roomId } }
-	);
+	await pullBookingsFromUsers(bookingIds);
 
 	res.json({ message: 'Room deleted successfully' });
 });

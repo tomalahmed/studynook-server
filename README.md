@@ -18,7 +18,7 @@ Express REST API for **StudyNook** — rooms, bookings, and JWT-protected routes
 - Node.js, Express 5
 - MongoDB, Mongoose
 - JWT (jsonwebtoken / jose on client)
-- Zod validation, bcryptjs
+- Zod validation (env + request helpers)
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ Create `.env` in this folder:
 | `MONGODB_DB_NAME` | Database name |
 | `JWT_SECRET` | Must match client `JWT_SECRET` or `BETTER_AUTH_SECRET` |
 | `JWT_EXPIRES_IN` | Optional token expiry (e.g. `7d`) |
-| `CORS_ORIGIN` | Allowed origin(s) for the client |
+| `CLIENT_URL` | Next.js origin for CORS + credentials (e.g. `http://localhost:3000`) |
 
 ## Getting started
 
@@ -53,6 +53,7 @@ API base: `http://localhost:5000/api`
 |---------|-------------|
 | `npm run dev` | Start with nodemon |
 | `npm start` | Start production server |
+| `npm test` | Run Vitest unit tests |
 
 ## API overview
 
@@ -71,8 +72,10 @@ API base: `http://localhost:5000/api`
 
 ## Deployment
 
-Hosted on Render. Set `CORS_ORIGIN` to `https://studynook-client-seven.vercel.app`.
+Hosted on Render. Set `CLIENT_URL` to `https://studynook-client-seven.vercel.app`.
+
+Booking create/cancel use MongoDB transactions when the deployment supports them (Atlas / replica set). On standalone local MongoDB, the API falls back to non-transactional writes.
 
 ## Related
 
-- Frontend: https://github.com/tomalahmed/studynook-client
+- Frontend: studynook-client — https://studynook-client-seven.vercel.app/
