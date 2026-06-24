@@ -1,37 +1,33 @@
 {
-  "name": "marketplace-platform-server",
+  "name": "studynook-server",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/tomalahmed/studynook-server.git"
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/tomalahmed/studynook-server/issues"
-  },
-  "homepage": "https://github.com/tomalahmed/studynook-server#readme",
   "dependencies": {
-    "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-validator": "^7.3.2",
-    "helmet": "^8.2.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.1.0",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^9.7.2"
+    "mongodb": "^7.2.0",
+    "mongoose": "^8.24.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "jose": "^6.2.3",
+    "nodemon": "^3.1.14",
+    "vitest": "^3.2.4"
   }
 }
